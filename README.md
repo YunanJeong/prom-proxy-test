@@ -33,3 +33,29 @@ prometheus-proxy는 agent에서 proxy로 request하는 방향으로 gRPC를 이�
 gRPC에 대한 추가설정이 필요
 
 TLS를 쓸꺼면 그에 필요한 인증 설정을하고, 쓰지 않더라도 관련 설정이 필요할 듯 하다.
+
+## node-exporter만 실행
+
+helm install my-exporter prometheus-community/kube-prometheus-stack --version 55.8.3 -f only_exporter.yaml
+
+
+helm upgrade my-exporter prometheus-community/prometheus-node-exporter --version 4.30.3  --set "hostRootFsMount.enabled=false"  \
+--set "service.type=NodePort"
+
+```yaml
+hostRootFsMount:
+  enabled: false   # default: true
+```
+
+## Prometheus만 실행
+
+helm install my-prom prometheus-community/kube-prometheus-stack --version 55.8.3 -f only_prom.yaml
+
+## exporter의 외부 노출 방법
+
+- 기본적으로 `hostPort`가 활성화되어 있음
+- HostPort를 설정은, Host(Node)의 특정 Port에 Container의 Port를 바인딩한다는 의미
+- Service, Ingress와 별개 방식이며, 중간단계없이 Host(Node)의 Port를 통해 직접적으로 Container를 외부노출
+  - `도커 네트워크 호스트 모드 or Native 앱 설치와 비슷한 효과`
+- NodePort 서비스와 달리, 클러스터 내 다른 Node에서 포트가 공유되지 않음
+- 일반적인 쿠버네티스 앱 배포에 적절치 않은 단점들이 많으나, exporter처럼 DaemonSet으로 배포되는 앱들에게 적절한 방식
