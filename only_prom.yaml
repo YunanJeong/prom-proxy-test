@@ -144,32 +144,3 @@ prometheusOperator:
     name: ""      # default: ""
   nodeSelector: {}
 
-# 쿠버네티스 컴포넌트(ApiServer, kubelet, ...) 메트릭 수집 여부 (ServiceMonitor실행여부)
-# default는 true이나, 메모리 부하가 상당하므로 필요치 않은 항목은 false처리 필요
-  # 여기서 false시, defaultRules섹션에서 해당규칙도 false해주면 좋다.
-  # (ServiceMonitor가 꺼져있는데 recording rule이 남아있으면, 무시가능한 수준으로 불필요한 계산부하 발생)
-kubernetesServiceMonitors:  ## 전체 On-Off
-  enabled: false            # default: true
-# 개별 On-Off
-kubeApiServer:              ## Component scraping the kube api server
-  enabled: true             # default: true
-kubelet:                    ## Component scraping the kubelet and kubelet-hosted cAdvisor
-  enabled: true             # default: true
-kubeControllerManager:      ## Component scraping the kube controller manager
-  enabled: true             # default: true
-coreDns:                    ## Component scraping coreDns. Use either this or kubeDns
-  enabled: true             # default: true
-kubeDns:                    ## Component scraping kubeDns. Use either this or coreDns
-  enabled: false            # default: false
-kubeEtcd:                   ## Component scraping etcd
-  enabled: true             # default: true
-kubeScheduler:              ## Component scraping kube scheduler
-  enabled: true             # default: true
-kubeProxy:                  ## Component scraping kube proxy
-  enabled: true             # default: true
-
-# kube-state-metrics subchart
-# 쿠버네티스 리소스(Pod,Service,...)의 상태 메트릭 수집 여부
-kubeStateMetrics:       ## Component scraping kube state metrics
-  enabled: false        # default: true
-

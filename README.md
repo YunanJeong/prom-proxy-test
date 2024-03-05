@@ -3,59 +3,46 @@
 Prometheus Proxy beyond firewall
 
 ```sh
-
-# 아래 명령어 대로 실행시 콘솔실행됨.
-  # 도커 인터랙티브(콘솔)모드는 아닌데, 이미지 내부 entrypoint와 자바앱이 그렇게 설정된듯
-  # 라이브 실행시 -d 옵션(백그라운드 모드)을 명시적으로 활성화해주도록 하자
+# -d: 백그라운드 실행. 미설정시 default는 콘솔실행
+# --network host: Agent는 외부로 Request하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행해준다.
 
 # Proxy 실행 (Prometheus와 Agent 사이)
-docker run --rm -p 8082:8082 -p 8092:8092 -p 50051:50051 -p 8080:8080 \
-        --env ADMIN_ENABLED=true \
+docker run --rm -d -p 50051:50051 -p 8080:8080 \
+        --env ADMIN_ENABLED=false \
         --env METRICS_ENABLED=true \
         pambrose/prometheus-proxy:1.21.0
+        # 에이전트의 request 수신: 50051 (grpc)
+        # Prometheus의 request 수신: 8080 (http)
+        # 관리자 포트(비활성화): 8082, 8092
 
-# Agent 실행(Proxy와 Exporter사이)
-docker run --rm -p 8083:8083 -p 8093:8093 --network host \
+# Agent 실행(Proxy와 Exporter사이) (로컬 설정파일 예)
+docker run --rm -d -p --network host \
+    --mount type=bind,source="$(pwd)"/localtest.conf,target=/app/prom-agent.conf \
+    --env AGENT_CONFIG=prom-agent.conf \
+    pambrose/prometheus-agent:1.21.0
+    # 관리자 포트(비활성화): 8083, 8093
+
+# Agent 실행(Proxy와 Exporter사이) (URL 설정 예)
+docker run --rm -d --network host \
         --env AGENT_CONFIG='https://raw.githubusercontent.com/pambrose/prometheus-proxy/master/examples/simple.conf' \
         pambrose/prometheus-agent:1.21.0
-
-# Agent 실행(설정을 URL 대신 로컬파일로 하기)
-docker run --rm -p 8083:8083 -p 8093:8093 --network host \
-    --mount type=bind,source="$(pwd)"/my-config.conf,target=/app/prom-agent.conf \
-    --env AGENT_CONFIG=prom-agent.conf \
-    pambrose/prometheus-agent:1.21.0
-
-# Agent 실행(설정을 URL 대신 로컬파일로 하기)
-docker run --rm -p 8083:8083 -p 8093:8093 --network host \
-    --mount type=bind,source="$(pwd)"/prom-agent.conf,target=/app/prom-agent.conf \
-    --env AGENT_CONFIG=prom-agent.conf \
-    pambrose/prometheus-agent:1.21.0
+        # 관리자 포트(비활성화): 8083, 8093
 ```
-
-## gRPC 설정
-
-prometheus-proxy는 agent에서 proxy로 request하는 방향으로 gRPC를 이용해 통신(port 50051)한다.
-
-gRPC에 대한 추가설정이 필요
-
-TLS를 쓸꺼면 그에 필요한 인증 설정을하고, 쓰지 않더라도 관련 설정이 필요할 듯 하다.
 
 ## node-exporter만 실행
 
+```sh
 helm install my-exporter prometheus-community/kube-prometheus-stack --version 55.8.3 -f only_exporter.yaml
 
-
-helm upgrade my-exporter prometheus-community/prometheus-node-exporter --version 4.30.3  --set "hostRootFsMount.enabled=false"  \
---set "service.type=NodePort"
-
-```yaml
-hostRootFsMount:
-  enabled: false   # default: true
+# WSL 등에서 마운트 문제 발생시 옵션 추가
+--set "prometheus-node-exporter.hostRootFsMount.enabled=false"
 ```
 
 ## Prometheus만 실행
 
+```sh
 helm install my-prom prometheus-community/kube-prometheus-stack --version 55.8.3 -f only_prom.yaml
+```
 
 ## exporter의 외부 노출 방법
 
