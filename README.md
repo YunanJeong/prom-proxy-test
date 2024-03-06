@@ -2,6 +2,8 @@
 
 Prometheus Proxy beyond firewall
 
+- [prometheus-proxy](https://github.com/pambrose/prometheus-proxy?tab=readme-ov-file)
+
 ```sh
 # -d: 백그라운드 실행. 미설정시 default는 콘솔실행
 # --network host: Agent는 외부로 Request하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행해준다.
