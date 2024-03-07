@@ -73,11 +73,11 @@ docker compose up -d
 ## exporter의 외부 노출 방법
 
 - 기본적으로 `hostPort`가 활성화되어 있음
-- HostPort를 설정은, Host(Node)의 특정 Port에 Container의 Port를 바인딩한다는 의미
+- HostPort 설정은, Host(Node)의 특정 Port에 Container의 Port를 바인딩한다는 의미
 - Service, Ingress와 별개 방식이며, 중간단계없이 Host(Node)의 Port를 통해 직접적으로 Container를 외부노출
-  - `도커 네트워크 호스트 모드 or Native 앱 설치와 비슷한 효과`
-- NodePort 서비스와 달리, 클러스터 내 다른 Node에서 포트가 공유되지 않음
-- 일반적인 쿠버네티스 앱 배포에 적절치 않은 단점들이 많으나, exporter처럼 DaemonSet으로 배포되는 앱들에게 적절한 방식
+  - `도커 네트워크 호스트 모드` or `Native 앱 설치`와 비슷한 효과
+- NodePort 서비스와 달리, 클러스터 내 다른 Node에 포트가 공유되지 않음
+- hostPort는 일반적인 쿠버네티스 앱 배포에 적절치 않지만, exporter와 같은 DaemonSet기반 앱에는 적절
 
 ## memo
 
