@@ -83,3 +83,4 @@ docker compose up -d
 
 - Prometheus는 Proxy 1개를 node-exporter 1개 (노드 1개)로 취급한다.
 - 환경이 허락된다면, 실제 node-exporter 수 만큼 proxy와 agent를 따로 구축하는 것이 grafana에서 보기에 좋다. (job이 아닌 instance로 명확히 구분되므로)
+- 이렇게 되면 proxy는 헬름차트화하고, ingress 작업까지 들어가주면 좋을 듯한데,, 손이 너무 많이 간다.
