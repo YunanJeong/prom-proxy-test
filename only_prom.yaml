@@ -30,8 +30,19 @@ prometheus:
         metrics_path: "/app1_metrics"  # Agent에서 설정한 exporter
         static_configs:
           - targets:
-            - localhost:8080           # Prometheus-Proxy
-     
+            - localhost:8080            # Prometheus-Proxy
+      # - job_name: app2_metrics
+      #   metrics_path: "/app2_metrics"  # Agent에서 설정한 exporter
+      #   static_configs:
+      #     - targets:
+      #       - localhost:9102           # Prometheus-Proxy -p 9102:8080
+      # - job_name: app2_metrics
+      #   metrics_path: "/app2_metrics"  # Agent에서 설정한 exporter
+      #   static_configs:
+      #     - targets:
+      #       - localhost:9103           # Prometheus-Proxy -p 9103:8080
+
+      
       # Prometheus가 exporter를 참조할 때 ServiceMonitor를 쓰지않고 수동연결하는 경우 설정
       # # 단일 클러스터, kafka-exporter
       # - job_name: kafka-metrics
