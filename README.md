@@ -6,6 +6,16 @@ Prometheus Proxy beyond firewall
 - 이는 모니터링 대상 서버가 사설망 등 보안환경에 있다면 사용하기 힘든 방식이다.
 - 통신방향을 바꾸기 위해 [prometheus-proxy](https://github.com/pambrose/prometheus-proxy?tab=readme-ov-file)를 활용하는 방법을 정리한다.
 
+## 구조 및 통신 방향
+
+```json
+Prometheus => (:8080)Proxy(:50051) <= ProxyAgent => (:9100)Exporter
+```
+
+- 모니터링 대상 서버가 여러 개인 경우에도 Proxy 1개, Agent 1개 구성가능
+  - 메트릭 조회시 하나의 서버(:8080)로 취급되지만 Job으로 서버 별 데이터 구분가능
+  - Promtheus, Proxy, Agent의 적절한 설정을 통해 다른 서버인것 처럼 구별도 가능 (예시 파일들 참고)
+
 ## Proxy 실행 (Prometheus와 Agent 사이)
 
 ```sh
@@ -13,22 +23,26 @@ Prometheus Proxy beyond firewall
 # --network host: Agent는 외부로 Request하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행해준다.
 
 # Proxy 실행 (Prometheus와 Agent 사이)
-docker run --rm -d -p 50051:50051 -p 8080:8080 \
+docker run --restart=unless-stopped -d \
+        -p 50051:50051 \
+        -p 8080:8080 \
         --env ADMIN_ENABLED=false \
         --env METRICS_ENABLED=true \
         pambrose/prometheus-proxy:1.21.0
         # 에이전트의 request 수신: 50051 (grpc)
         # Prometheus의 request 수신: 8080 (http)
         # 관리자 포트(비활성화): 8082, 8092
-        # 모니터링 대상 수 만큼 포트를 열어 8080으로 연결해주면 좋음
-          # 인스턴스를 명확히 구분하여 보편적인 대시보드 호환성이 좋아짐
+        # 모니터링 대상 수 만큼 포트를 열어 8080으로 연결해주면 좋음 (필수X)
+          # -p 9100:8080 -p 9101:8080 -p 9102:8080 ...
+          # 포트번호로 대상서버를 명확히 구분하여 보편적인 대시보드 호환성이 좋아짐
 ```
 
 ## Agent 실행 (Proxy와 Exporter 사이)
 
 ```sh
 # Agent 실행(Proxy와 Exporter사이) (로컬 설정파일 예)
-docker run --rm -d --network host \
+docker run --restart=unless-stopped -d
+    --network host \
     --mount type=bind,source="$(pwd)"/agent.conf,target=/app/prom-agent.conf \
     --env AGENT_CONFIG=prom-agent.conf \
     pambrose/prometheus-agent:1.21.0
