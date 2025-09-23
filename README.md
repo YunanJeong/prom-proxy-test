@@ -27,7 +27,7 @@ docker run --restart=unless-stopped -d \
         -p 8080:8080 \
         --env ADMIN_ENABLED=false \
         --env METRICS_ENABLED=true \
-        pambrose/prometheus-proxy:1.21.0
+        pambrose/prometheus-proxy:2.4.0
         # 에이전트의 request 수신: 50051 (grpc)
         # Prometheus의 request 수신: 8080 (http)
         # 관리자 포트(비활성화): 8082, 8092
@@ -44,7 +44,7 @@ docker run --restart=unless-stopped -d
     --network host \
     --mount type=bind,source="$(pwd)"/agent.conf,target=/app/prom-agent.conf \
     --env AGENT_CONFIG=prom-agent.conf \
-    pambrose/prometheus-agent:1.21.0
+    pambrose/prometheus-agent:2.4.0
     # 관리자 포트(비활성화): 8083, 8093
     # 온라인 환경에선 AGENT_CONFIG에 URL 가능
 ```
