@@ -52,7 +52,7 @@ docker run --restart=unless-stopped -d
 ## Prometheus 단독 설치 (사설망 바깥)
 
 ```sh
-helm install my-prom prometheus-community/kube-prometheus-stack --version 55.8.3 -f only_prom.yaml
+helm install my-prom prometheus-community/kube-prometheus-stack --version 69.2.4 -f only_prom.yaml
 ```
 
 ## node-exporter 설치 (사설망 내 모니터링 대상 서버)
@@ -62,7 +62,7 @@ helm install my-prom prometheus-community/kube-prometheus-stack --version 55.8.3
 ```sh
 # 사전에 사설 저장소에 이미지 수동업로드 필요.
 # 이 차트의 이미지 출처는 docker.io가 아니라 quay.io라서 프록시 다운로드 불가
-helm install my-exporter ./reference/kube-prometheus-stack-55.8.3.tgz -f only_exporter.yaml -n devnet
+helm install my-exporter ./reference/kube-prometheus-stack-69.2.4.tgz -f only_exporter.yaml -n devnet
 
 # WSL 등에서 테스트시 마운트 문제 발생하면 옵션 추가
 --set "prometheus-node-exporter.hostRootFsMount.enabled=false"
