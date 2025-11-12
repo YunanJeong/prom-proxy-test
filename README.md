@@ -19,7 +19,6 @@ Prometheus => (:8080)Proxy(:50051) <= ProxyAgent => (:9100)Exporter
 
 ```sh
 # -d: 백그라운드 실행. 미설정시 default는 콘솔실행
-# --network host: Agent는 외부로 Request하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행해준다.
 
 # Proxy 실행 (Prometheus와 Agent 사이)
 docker run --restart=unless-stopped -d \
@@ -34,13 +33,14 @@ docker run --restart=unless-stopped -d \
         # 모니터링 대상 수 만큼 포트를 열어 8080으로 연결해주면 좋음 (필수X)
           # 예시) -p 9100:8080 -p 9101:8080 -p 9102:8080 ...
           # Prometheus에서 포트번호로 모니터링 대상을 명확히 구분할 수 있게되어 보편적인 대시보드 호환성이 좋아짐
-          # 안쓰는 포트를 미리 열어두면 prometheus 집계에 문자발생하므로, 실사용 포트만 열어두기
+          # 안쓰는 포트를 미리 열어두면 prometheus 집계에 문제발생하므로, 실사용 포트만 열어두기
 ```
 
 ## Agent 실행 (Proxy와 Exporter 사이)
 
 ```sh
 # Agent 실행(Proxy와 Exporter사이) (로컬 설정파일 예)
+# --network host: Agent는 외부로 Request하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행해준다.
 docker run --restart=unless-stopped -d
     --network host \
     --mount type=bind,source="$(pwd)"/agent.conf,target=/app/prom-agent.conf \
