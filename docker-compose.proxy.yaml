@@ -1,7 +1,7 @@
 # -d: 백그라운드 실행. 미설정시 default는 콘솔실행
 # docker compose -f docker-compose.proxy.yaml up -d
 
-version: '3.7'
+# version: '3.7'
 services:
   prometheus-proxy:
     image: pambrose/prometheus-proxy:2.4.0
