@@ -12,8 +12,10 @@ services:
     # Agent는 외부로 Request도 하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행 권장
     network_mode: "host"  
 
+    # 컨테이너 내부에서 인식할 설정파일 이름  # 온라인 환경에선 URL로 대체가능
     environment:
-      # 설정파일 경로포함 기술  # 온라인 환경에선 URL로 대체가능
       AGENT_CONFIG: "prom-agent.conf"
+    
+    # 실행시 로컬설정파일을 컨테이너 내부로 마운트
     volumes:
       - ./agent_localtest.conf:/app/prom-agent.conf
