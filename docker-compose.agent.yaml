@@ -4,7 +4,7 @@
 # version: '3.7'
 services:
   prometheus-agent:
-    image: pambrose/prometheus-agent:2.4.0
+    image: pambrose/prometheus-agent:4.2.0
     container_name: prometheus-agent
     restart: unless-stopped
 
