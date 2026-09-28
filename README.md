@@ -41,7 +41,7 @@ docker run --restart=unless-stopped -d \
 ```sh
 # Agent 실행(Proxy와 Exporter사이) (로컬 설정파일 예)
 # --network host: Agent는 외부로 Request하므로, 네트워크 범위 혼동이 없도록 호스트모드로 실행해준다.
-docker run --restart=unless-stopped -d
+docker run --restart=unless-stopped -d \
     --network host \
     --mount type=bind,source="$(pwd)"/agent.conf,target=/app/prom-agent.conf \
     --env AGENT_CONFIG=prom-agent.conf \
@@ -49,6 +49,24 @@ docker run --restart=unless-stopped -d
     # 관리자 포트(비활성화): 8083, 8093
     # 온라인 환경에선 AGENT_CONFIG에 URL 가능
 ```
+
+### 대상 노드가 많을 때 연결이 죽었다 살았다 하는 경우 (동시 스크랩 수 조정)
+
+- Agent는 기본값(`maxConcurrentClients = 1`)으로는 exporter를 한 번에 하나씩 스크랩한다.
+- 대상 노드가 많으면 스크랩이 밀려 Prometheus scrape timeout에 걸리고, target이 죽었다 살았다 한다.
+  - Prometheus 쪽 인터벌·타임아웃을 늘리면 완화되지만 원인 해결은 아니다.
+- 대상 노드 수에 맞춰 `agent.conf`에서 값을 올린다.
+
+```hocon
+agent {
+  http {
+    maxConcurrentClients = 17    # 동시 스크랩 수 (기본 1). 대상 노드 수 이상으로 설정
+  }
+}
+```
+
+- 설정 가능한 전체 옵션과 기본값: [config/config.conf](https://github.com/pambrose/prometheus-proxy/blob/master/config/config.conf)
+  - master 기준이므로, 사용 중인 이미지 버전의 태그로 바꿔서 확인
 
 ## Prometheus 단독 설치 (사설망 바깥)
 
