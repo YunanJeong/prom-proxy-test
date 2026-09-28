@@ -23,24 +23,26 @@ prometheus:
     nodeSelector: {}
     retention: 7d
     additionalScrapeConfigs: # []
-      # Prometheus-Proxy는 하나의 Exporter처럼 취급된다.
-      # 여러 node exporter는 metrics_path(job)으로 구분된다.
-      # 개별 인스턴스를 정확히 구분하고 싶은경우, exporter 하나 당 agent,proxy도 각각 구축 필요
+      # Prometheus-Proxy를 거치면 target은 모두 proxy 주소(9101)로 같음
+      # 대상은 metrics_path로 구분하고, labels.instance에 실제 exporter 주소를 지정함
       - job_name: app1_metrics
         metrics_path: "/app1_metrics"  # Agent에서 설정한 exporter
         static_configs:
-          - targets:
-            - localhost:8080            # Prometheus-Proxy
+          - targets: [localhost:9101]  # prometheus-proxy
+            labels:
+              instance: localhost:9100  # instance값을 proxy 대신 실제 값으로 변조
       # - job_name: app2_metrics
       #   metrics_path: "/app2_metrics"  # Agent에서 설정한 exporter
       #   static_configs:
-      #     - targets:
-      #       - localhost:9102           # Prometheus-Proxy -p 9102:8080
+      #     - targets: [localhost:9101]  # prometheus-proxy
+      #       labels:
+      #         instance: app2.local:9100  # instance값을 proxy 대신 실제 값으로 변조
       # - job_name: app3_metrics
       #   metrics_path: "/app3_metrics"  # Agent에서 설정한 exporter
       #   static_configs:
-      #     - targets:
-      #       - localhost:9103           # Prometheus-Proxy -p 9103:8080
+      #     - targets: [localhost:9101]  # prometheus-proxy
+      #       labels:
+      #         instance: app3.local:9100  # instance값을 proxy 대신 실제 값으로 변조
 
       
       # Prometheus가 exporter를 참조할 때 ServiceMonitor를 쓰지않고 수동연결하는 경우 설정

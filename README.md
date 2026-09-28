@@ -12,8 +12,10 @@ Prometheus Proxy beyond firewall
 Prometheus => (:8080)Proxy(:50051) <= ProxyAgent => (:9100)Exporter
 ```
 
+- 8080은 흔한 포트라 다른 서비스와 겹치기 쉬우므로 도커 배포시 다른 호스트 포트로 매핑 권장 (본 프로젝트는 9101)
 - 모니터링 대상 서버가 여러 개인 경우에도 Proxy 1개, Agent 1개 구성가능
-  - 메트릭 조회시 하나의 서버(:8080)로 취급되지만 Job이름과 metric_path를 통해 구분 가능
+  - 대상은 metrics_path로 구분하고, Prometheus scrape 설정에서 대상마다 `labels.instance: <실제 IP:포트>` 를 지정해야 함
+  - 지정하지 않으면 모든 대상의 instance가 proxy 주소로 같아져 Grafana에서 노드 구분이 안 됨
 
 ## Proxy 실행 (Prometheus와 Agent 사이)
 
@@ -23,17 +25,14 @@ Prometheus => (:8080)Proxy(:50051) <= ProxyAgent => (:9100)Exporter
 # Proxy 실행 (Prometheus와 Agent 사이)
 docker run --restart=unless-stopped -d \
         -p 50051:50051 \
-        -p 8080:8080 \
+        -p 9101:8080 \
         --env ADMIN_ENABLED=false \
         --env METRICS_ENABLED=true \
         pambrose/prometheus-proxy:4.2.0
         # 에이전트의 request 수신: 50051 (grpc)
-        # Prometheus의 request 수신: 8080 (http)
+        # Prometheus의 request 수신: 컨테이너 8080 (http)
+        # 호스트 8080은 다른 서비스와 겹치기 쉬워서 9101로 매핑 (특히 kube-prometheus-stack의 reloader-web포트와 겹침)
         # 관리자 포트(비활성화): 8082, 8092
-        # 모니터링 대상 수 만큼 포트를 열어 8080으로 연결해주면 좋음 (필수X)
-          # 예시) -p 9100:8080 -p 9101:8080 -p 9102:8080 ...
-          # Prometheus에서 포트번호로 모니터링 대상을 명확히 구분할 수 있게되어 보편적인 대시보드 호환성이 좋아짐
-          # 안쓰는 포트를 미리 열어두면 prometheus 집계에 문제발생하므로, 실사용 포트만 열어두기
 ```
 
 ## Agent 실행 (Proxy와 Exporter 사이)
@@ -118,6 +117,6 @@ docker compose up -d
 
 ## memo
 
-- Prometheus는 Proxy 1개를 node-exporter 1개 (노드 1개)로 취급한다.
-- 환경이 허락된다면, 실제 node-exporter 수 만큼 proxy와 agent를 따로 구축하는 것이 grafana에서 보기에 좋다. (job이 아닌 instance로 명확히 구분되므로)
-- 이렇게 되면 proxy는 헬름차트화하여 여러 개 실행하기 편하게 만들고, ingress 작업까지 들어가주면 좋을 듯한데,, 손이 너무 많이 간다.
+- Prometheus는 기본적으로 접속한 주소(proxy 주소)를 instance 라벨로 붙이므로, 그대로 두면 모든 대상이 노드 1개처럼 보인다.
+- scrape 설정에서 대상마다 `labels.instance`를 실제 exporter 주소로 지정하면 proxy·agent 1개로도 grafana에서 노드별로 구분된다.
+- prometheus-proxy 4.2.0부터 공식 Helm 차트가 제공된다. (`charts/prometheus-proxy`, `charts/prometheus-agent`)

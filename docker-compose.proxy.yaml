@@ -9,18 +9,21 @@ services:
     restart: unless-stopped
         
     ports:
-      - "50051:50051"  # 에이전트의 request 수신: 50051 (grpc)
-      - "8080:8080"    # Prometheus의 request 수신: 8080 (http)
-      # - "8082:8082"    # 관리자(HTTP)
-      # - "8092:8092"    # 관리자(gRPC)
+      - 50051:50051  # 에이전트의 request 수신: 50051 (grpc)
+      # - 8082:8082    # 관리자(HTTP)
+      # - 8092:8092    # 관리자(gRPC)
 
-      # 모니터링 대상 수 만큼 포트를 열어 8080으로 연결해주면 좋음 (필수X)
-      # Prometheus, Grafana에서 포트번호로 모니터링 대상을 좀 더 명확히 구분할 수 있게되어 보편적인 대시보드 호환성이 좋아짐
-      # 안쓰는 포트를 미리 열어두면 prometheus 집계에 문제발생하므로, 실사용 포트만 열어두기
-      # - "9101:8080"  # exporter1용
-      # - "9102:8080"  # exporter2용
-      # - "9103:8080"  # exporter3용 ... 
-      
+      # - 8080:8080    # Prometheus의 request 수신 (http, 컨테이너 포트 8080)
+      # 호스트 8080은 다른 서비스와 겹치기 쉬워서 9101로 매핑 (특히 kube-prometheus-stack의 reloader-web포트와 겹침)
+      - 9101:8080
+
+      ## 모니터링 대상이 여러 개여도 포트는 하나면 됨
+      ## 단, Prometheus scrape 설정에서 대상마다 labels.instance: <실제 IP:포트> 를 지정해야 함
+      # 지정하지 않으면 모든 대상의 instance가 proxy 주소로 같아짐
+      # Grafana 대시보드는 instance 라벨로 노드를 구분하는 경우가 많아서, 지정하지 않으면 여러 노드가 한 줄로 합쳐져 보임
+      # 참고) Prometheus의 표준적인 메트릭 식별 라벨: job, instance
+
+
     environment:
       ADMIN_ENABLED: "false"   # 관리자 포트 비활성화
       METRICS_ENABLED: "true"  # 메트릭 활성화
