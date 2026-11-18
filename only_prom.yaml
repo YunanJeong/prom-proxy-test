@@ -44,7 +44,18 @@ prometheus:
       #       labels:
       #         instance: app3.local:9100  # instance값을 proxy 대신 실제 값으로 변조
 
-      
+      # 사설망 Prometheus의 메트릭을 federation으로 가져오는 경우
+      # Agent가 사설망 Prometheus의 /federate 응답을 proxy로 전달하므로, 여기서는 위 exporter 예시처럼 proxy를 scrape함
+      # labels.instance는 지정하지 않고 honor_labels: true를 씀
+      #   honor_labels: scrape한 메트릭에 이미 붙은 라벨과 target 라벨(job, instance 등)이 겹칠 때 메트릭 쪽 값을 유지하는 옵션
+      #   false(기본)면 사설망 Prometheus가 붙인 instance가 proxy 주소로 덮어써지고, 원래 값은 exported_instance로 이름이 바뀜
+      # - job_name: cluster-a
+      #   metrics_path: "/cluster-a"     # Agent에서 설정한 path
+      #   honor_labels: true             # 필수
+      #   static_configs:
+      #     - targets: [localhost:9101]  # prometheus-proxy
+
+
       # Prometheus가 exporter를 참조할 때 ServiceMonitor를 쓰지않고 수동연결하는 경우 설정
       # # 단일 클러스터, kafka-exporter
       # - job_name: kafka-metrics
